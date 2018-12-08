@@ -108,17 +108,26 @@
 
 
 
-  <meta name="description" content="追求本质，分享知识，授人以渔">
-<meta name="keywords" content="逆向工程，windows逆向分析，手游安全，ctf">
-<meta property="og:type" content="website">
-<meta property="og:title" content="littleNA&#39;s blog">
-<meta property="og:url" content="http://yoursite.com/tags/android-malware/index.html">
+  <meta name="description" content="&amp;emsp;&amp;emsp;为什么fast bin中chunk的大小和small bin中的有重叠？  前言&amp;emsp;&amp;emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：  为什么">
+<meta name="keywords" content="ctf,pwn,linux,heap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)">
+<meta property="og:url" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/index.html">
 <meta property="og:site_name" content="littleNA&#39;s blog">
-<meta property="og:description" content="追求本质，分享知识，授人以渔">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;为什么fast bin中chunk的大小和small bin中的有重叠？  前言&amp;emsp;&amp;emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：  为什么">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/1.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/3.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/4.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/5.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/6.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/7.png">
+<meta property="og:updated_time" content="2018-12-08T09:29:01.517Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="littleNA&#39;s blog">
-<meta name="twitter:description" content="追求本质，分享知识，授人以渔">
+<meta name="twitter:title" content="从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;为什么fast bin中chunk的大小和small bin中的有重叠？  前言&amp;emsp;&amp;emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：  为什么">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/1.png">
 
 
 
@@ -127,7 +136,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/tags/android-malware/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/"/>
 
 
 
@@ -137,7 +146,7 @@
   };
 </script>
 
-  <title>标签: android malware | littleNA's blog</title>
+  <title>从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin) | littleNA's blog</title>
   
 
 
@@ -184,7 +193,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -249,7 +258,7 @@
         
         
           
-          <li class="menu-item menu-item-tags menu-item-active">
+          <li class="menu-item menu-item-tags">
     <a href="/tags/" rel="section">
       <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
   </li>
@@ -329,87 +338,337 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>android malware<small>标签</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
+
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="littleNA">
+      <meta itemprop="description" content="追求本质，分享知识，授人以渔">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="littleNA's blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/09/30/阅读笔记-《AVPASS-Automatically-Bypassing-Android-Malware-Detection-System》/" itemprop="url">
-              
-                <span itemprop="name">[阅读笔记]《AVPASS: Automatically Bypassing Android Malware Detection System》</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)
+              
+            
+          </h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-09-30T10:34:47+08:00"
-              content="2018-09-30" >
-          09-30
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
 
-    </header>
-  </article>
+            
+            
+            
 
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 16:46:41" itemprop="dateCreated datePublished" datetime="2018-12-08T16:46:41+08:00">2018-12-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-08 17:29:01" itemprop="dateModified" datetime="2018-12-08T17:29:01+08:00">17:29:01</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/逆向分析/" itemprop="url" rel="index"><span itemprop="name">逆向分析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/" class="leancloud_visitors" data-flag-title="从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>&emsp;&emsp;为什么fast bin中chunk的大小和small bin中的有重叠？</p>
+</blockquote>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>&emsp;&emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：</p>
+<ol>
+<li>为什么fast bin和small bin中存储的大小有重叠？什么时候会使用重叠的small bin？</li>
+<li>释放的块只要不满足fast bin大小的块都会放到unsorted bin中，那么什么时候才会保存到small bin和large bin中？</li>
+</ol>
+<p>&emsp;&emsp;（卧槽，我答案呢….）</p>
+<p>&emsp;&emsp;哎，好记性不如烂笔头，赶紧祭出gdb分析一通，并写下此篇文章记录一下。</p>
+<a id="more"></a>
+<h1 id="环境搭建（kali-gdb-python3-7-pwngdb）"><a href="#环境搭建（kali-gdb-python3-7-pwngdb）" class="headerlink" title="环境搭建（kali + gdb + python3.7 + pwngdb）"></a>环境搭建（kali + gdb + python3.7 + pwngdb）</h1><p>&emsp;&emsp;使用的kali虚拟机，其中 pwngdb 是新安装的，所以也稍微记录一下。这里gdb很坑，kali自带的python是3.6的，而gdb编译的python库是3.7（不知道是不是我升级了的原因），导致pwngdb安装的时候找不到python3.7，所以有3个选择：</p>
+<ol>
+<li>重新编译gdb并配置依赖库为python3.6。</li>
+<li>安装一个python3.7。</li>
+<li>胡乱修改pwngdb的setup.h文件，让其安装成功（虽然安装成功了，但是最后缺少各种东西，运行不去来，别问我是怎么知道的，而且我还找到一个跟我一样经历的人：<a href="https://www.jianshu.com/p/47883d16fa30" target="_blank" rel="noopener">安装pwndbg遇到的坑</a>）。</li>
+</ol>
+<p>&emsp;&emsp;那么这里我们就选择安装一个python3.7。编译安装python3.7后，再安装pwngdb时会出现另一个ssl的问题，其实是没有安装ssl的库。好吧，安装好ssl库以后重新编译安装python3.7，最后就顺利安装好pwngdb了。嗯，半天时间就过去了。</p>
+<p>&emsp;&emsp;总的来说可能需要用到以下几个命令：</p>
+<ul>
+<li><p>&emsp;&emsp;安装pwngdb时，提示找不到python3.7，那么需要安装一个python3.7，安装python3.7前，需要安装ssl库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libssl-dev</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>&emsp;&emsp;源码编译安装python3.7：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> Python-3.7.1</span><br><span class="line">sudo ./configure</span><br><span class="line">sudo make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>&emsp;&emsp;创建符号链接（让pwngdb能找到python3.7）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln -s /usr/<span class="built_in">local</span>/bin/python3.7 /usr/bin/python3.7</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>&emsp;&emsp;安装pwngdb：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> pwndbg</span><br><span class="line">sudo ./setup.sh</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="问题回顾"><a href="#问题回顾" class="headerlink" title="问题回顾"></a>问题回顾</h1><p>&emsp;&emsp;fast bin保存的chunk大小是16-80字节，unsorted bin 保存其他被free掉但不满足fast bin中的chunk，small bin保存的chunk大小是小于512字节，大于等于512字节的chunk保存到large bin中。（注意：这里的各种bin保存的是已经被free函数释放的内存，而不是已分配的内存，不要搞混了。）</p>
+<p>&emsp;&emsp;那么从上面可以发现， fast bin中chunk的字节大小是small bin的子集，存在重叠，那什么时候chunk会保存到small bin呢？另一个问题就是，chunk被释放后，首先是保存在fast bin或者unsorted bin中的，那么什么时候会保存到large bin中呢？既然释放的chunk首先不会跑到small和large bin中，那么我们可以大胆猜想，在分配内存的时候，chunk可能会移动到这个2个bin中，也就是说，当unsorted bin被遍历时，其中的chunk就会相应地被放到small bin和large bin中。</p>
+<p>&emsp;&emsp;这样猜想是有根据的，unsorted bin是链表结构，free掉的chunk会被插入到链表最后，这时候遍历不划算。而malloc的时候需要遍历unsorted bin中的chunk，找到合适的chunk，这时再将其他不满足的chunk保存到small bin和large bin中也是顺便的事情，所以从unsorted bin命名也可看成，这是一个未排序的bin，需要排序就需要遍历，遍历后的chunk就直接分类了。</p>
+<p>&emsp;&emsp;具体分析可以看freebuf的2篇文章，文章详细描述了为什么linux内存管理是这样设计：</p>
+<blockquote>
+<p>&emsp;&emsp;<a href="https://www.freebuf.com/articles/system/104144.html" target="_blank" rel="noopener">Linux堆内存管理深入分析（上）</a><br>&emsp;&emsp;<a href="https://www.freebuf.com/articles/security-management/105285.html" target="_blank" rel="noopener">Linux堆内存管理深入分析（下）</a></p>
+</blockquote>
+<p>&emsp;&emsp;为验证上面的猜想，我们可以查看linux的源码，也可以做个小实验验证一下，我这里主要还是动态分析为主。</p>
+<h1 id="小实验"><a href="#小实验" class="headerlink" title="小实验"></a>小实验</h1><p>&emsp;&emsp;先来看一下实验的代码（经过多次测试并优化）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">void</span> *a,*b,*c,*d,*e = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 第 1 步</span></span><br><span class="line">    a = <span class="built_in">malloc</span>(<span class="number">0x500</span>);</span><br><span class="line">    b = <span class="built_in">malloc</span>(<span class="number">0x100</span>);        <span class="comment">// 防止a，c释放后合并</span></span><br><span class="line">    c = <span class="built_in">malloc</span>(<span class="number">0x500</span>);</span><br><span class="line">    d = <span class="built_in">malloc</span>(<span class="number">0x100</span>);        <span class="comment">// 防止c 释放后与top_chunk合并</span></span><br><span class="line"> </span><br><span class="line">  <span class="comment">// 第 2 步</span></span><br><span class="line">    <span class="built_in">free</span>(a);    <span class="comment">// 执行后unsorted bin有1个0x500的块</span></span><br><span class="line">    <span class="built_in">free</span>(c);    <span class="comment">// 执行后unsorted bin有2个0x500的块</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 第 3 步</span></span><br><span class="line">    c = <span class="built_in">malloc</span>(<span class="number">0x400</span>);  <span class="comment">// 从unsorted bin中分配，还剩下0x100的块2放到unsorted bin中，另一个0x500的块1放到了large bin中</span></span><br><span class="line">    a = <span class="built_in">malloc</span>(<span class="number">0x400</span>);  <span class="comment">// 从large bin中分配，还剩下0x100的块1放到unsorted bin中，原来0x100的块2放到small bin</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 第 4 步   </span></span><br><span class="line">    e = <span class="built_in">malloc</span>(<span class="number">0x500</span>);  <span class="comment">// 从top_chunk分配，unsorted bin中的块1也放到small bin中</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 第 5 步</span></span><br><span class="line">    <span class="built_in">free</span>(a);</span><br><span class="line">    <span class="built_in">free</span>(b);</span><br><span class="line">    <span class="built_in">free</span>(c);</span><br><span class="line">    <span class="built_in">free</span>(d);</span><br><span class="line">    <span class="built_in">free</span>(e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;接着用gcc编译生成程序，并使用安装了pwngdb插件的gdb来调试程序。</p>
+<p>&emsp;&emsp;本来打算截取pwndbg输出的堆状态来说明，但是发现不够清晰，而且每个chunk还有头大小，导致不能够很好说明，所以我自己画了一个简化的堆状态图来说明。图中没有画出来的bin，默认都为空。其中，初始化堆图如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/1.png">
+<p>&emsp;&emsp;首先程序运行完第一步，分配了abcd 4个内存块，其中b和d是为了防止a和c 释放后发生合并，此时简化的堆如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/2.png">
+<p>&emsp;&emsp;第二步，程序释放了a和c的内存，此时的a和c对应的chunk保存到unsorted bin中，简化的堆如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/3.png">
+<p>&emsp;&emsp;第三步，第1句，申请分配0x400大小的内存赋值给c，这时系统首先会遍历unsorted bin，发现块2的chunk大小是0x500，满足申请，返回0x400大小，剩下的0x100放回到unsorted bin中，并对其他chunk进行排序，这时的另一个0x500块1会被放到large bin中。简化的堆如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/4.png">
+<p>&emsp;&emsp;第2句，申请0x400大小的内存赋值给a，此时系统还是遍历unsorted bin，发现没有满足的chunk，然后把其中0x100的chunk块2放到small bin中。接着搜索large bin，发现了一个0x500的chunk块1满足要求，返回0x400大小，剩下的0x100的chunk块1保存到unsorted bin中。简化的堆如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/5.png">
+<p>&emsp;&emsp;第四步：申请0x500大小的内存赋值给e，此时unsorted bin还是没有满足的chunk，而且0x100的chunk块1会被放到small bin中。接着large bin中也没有合适的chunk。最后系统从top chunk中分配内存。简化的堆如下：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/6.png">
+<p>&emsp;&emsp;第五步：释放所有内存，状态回到一开始：</p>
+<img src="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/7.png">
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>&emsp;&emsp;上面的小实验解决了前面提到的2个问题：fast bin和small bin回收chunk的途径不一样，所以大小重叠也是正常，实验同时也说明了在申请内存的时候，unsorted bin被会遍历，这时就有可能会将满足条件的chunk移动到small bin和large bin中。</p>
+<p>&emsp;&emsp;当然，上面只是一个很简单的场景，更详细的内容可以阅读linux源码和其他分析文章。</p>
+<h1 id="Pwndbg命令"><a href="#Pwndbg命令" class="headerlink" title="Pwndbg命令"></a>Pwndbg命令</h1><p>&emsp;&emsp;虽然文章没有提到pwndbg的使用，但是结果都是基于pwndbg调试出来的，顺便附上几个使用到的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">b main （main函数中下断 ）</span><br><span class="line">r （启动程序）</span><br><span class="line">n （单步步过）</span><br><span class="line"></span><br><span class="line">heap （查看堆信息）</span><br><span class="line">bin （查看各个bin信息）</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后，从libc2.26版本开始，bins中多了一个tcachebin，有兴趣的朋友可以自行了解，很多pwn题也开始利用这个bin来攻击，但是并不影响上面的结果。</p>
 
       
     </div>
 
+    
+
+	
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="littleNA 微信支付"/>
+		<p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/alipay.jpg" alt="littleNA 支付宝"/>
+		<p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+	<div>    
+	 
+	 
+		<ul class="post-copyright">
+		  <li class="post-copyright-author">
+			  <strong>本文作者：</strong>littleNA
+		  </li>
+		  <li class="post-copyright-link">
+			<strong>本文链接：</strong>
+			<a href="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/" title="从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)">2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/</a>
+		  </li>
+		  <li class="post-copyright-license">
+			<strong>版权声明： </strong>
+			本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0 CN</a> 许可协议。转载请注明出处！
+		  </li>
+		</ul>
+	  
+	</div>
+	
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ctf/" rel="tag"># ctf</a>
+          
+            <a href="/tags/pwn/" rel="tag"># pwn</a>
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+            <a href="/tags/heap/" rel="tag"># heap</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/30/阅读笔记-《AVPASS-Automatically-Bypassing-Android-Malware-Detection-System》/" rel="next" title="[阅读笔记]《AVPASS: Automatically Bypassing Android Malware Detection System》">
+                <i class="fa fa-chevron-left"></i> [阅读笔记]《AVPASS: Automatically Bypassing Android Malware Detection System》
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
           
+
+    
+	<div id="gitalk-container"></div>
+  
+
+
 
         </div>
         
@@ -430,8 +689,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -573,6 +841,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#环境搭建（kali-gdb-python3-7-pwngdb）"><span class="nav-number">2.</span> <span class="nav-text">环境搭建（kali + gdb + python3.7 + pwngdb）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题回顾"><span class="nav-number">3.</span> <span class="nav-text">问题回顾</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#小实验"><span class="nav-number">4.</span> <span class="nav-text">小实验</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Pwndbg命令"><span class="nav-number">6.</span> <span class="nav-text">Pwndbg命令</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -710,6 +994,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
 
   
 
@@ -744,6 +1032,21 @@
 
 
 
+    
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script type="text/javascript">
+	  var gitalk = new Gitalk({
+		clientID:  '19afa2c12d8f685a1141', 
+		clientSecret: 'ebbece283c1f2cc7379dd4fcc347f05f02c1f1c5',
+		id: '1544258801000',
+		repo: 'littleNA.github.io', 
+		owner: 'littleNA', 
+		admin: 'littleNA', 
+		distractionFreeMode: 'true',
+	  })
+	  gitalk.render('gitalk-container')
+  </script>
 
 
 

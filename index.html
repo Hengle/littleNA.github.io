@@ -350,6 +350,206 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="littleNA">
+      <meta itemprop="description" content="追求本质，分享知识，授人以渔">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="littleNA's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/" itemprop="url">
+                  从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-08 16:46:41" itemprop="dateCreated datePublished" datetime="2018-12-08T16:46:41+08:00">2018-12-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-12-08 17:29:01" itemprop="dateModified" datetime="2018-12-08T17:29:01+08:00">17:29:01</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/逆向分析/" itemprop="url" rel="index"><span itemprop="name">逆向分析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/" class="leancloud_visitors" data-flag-title="从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>&emsp;&emsp;为什么fast bin中chunk的大小和small bin中的有重叠？</p>
+</blockquote>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>&emsp;&emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：</p>
+<ol>
+<li>为什么fast bin和small bin中存储的大小有重叠？什么时候会使用重叠的small bin？</li>
+<li>释放的块只要不满足fast bin大小的块都会放到unsorted bin中，那么什么时候才会保存到small bin和large bin中？</li>
+</ol>
+<p>&emsp;&emsp;（卧槽，我答案呢….）</p>
+<p>&emsp;&emsp;哎，好记性不如烂笔头，赶紧祭出gdb分析一通，并写下此篇文章记录一下。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+	
+    
+    
+    
+
+    
+
+    
+
+	<div>    
+	 
+	 
+	</div>
+	
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/30/阅读笔记-《AVPASS-Automatically-Bypassing-Android-Malware-Detection-System》/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2158,7 +2358,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-count">10</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2179,7 +2379,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2230,7 +2432,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">19</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

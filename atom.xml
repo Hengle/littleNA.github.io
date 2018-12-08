@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-10-11T02:53:33.619Z</updated>
+  <updated>2018-12-08T09:29:01.517Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,41 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>从一个linux堆分配例子中理解4种bins(fast、unsorted、small和large bin)</title>
+    <link href="http://yoursite.com/2018/12/08/%E4%BB%8E%E4%B8%80%E4%B8%AAlinux%E5%A0%86%E5%88%86%E9%85%8D%E4%BE%8B%E5%AD%90%E4%B8%AD%E7%90%86%E8%A7%A34%E7%A7%8Dbins-fast%E3%80%81unsorted%E3%80%81small%E5%92%8Clarge-bin/"/>
+    <id>http://yoursite.com/2018/12/08/从一个linux堆分配例子中理解4种bins-fast、unsorted、small和large-bin/</id>
+    <published>2018-12-08T08:46:41.000Z</published>
+    <updated>2018-12-08T09:29:01.517Z</updated>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;&amp;emsp;&amp;emsp;为什么fast bin中chunk的大小和small bin中的有重叠？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;&amp;emsp;&amp;emsp;之前在学习pwn的时候，看过linux的堆分配相关的内容，也提出了上面那个问题，并最终找到了答案。但是昨天看到群里有个兄弟问同样问题的时候，脑子却是一片空白，怎么也想不起来。不过有做笔记习惯的我们当然不慌，镇定自若地寻找以前的笔记，奈何却发现只记录了2个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;为什么fast bin和small bin中存储的大小有重叠？什么时候会使用重叠的small bin？&lt;/li&gt;
+&lt;li&gt;释放的块只要不满足fast bin大小的块都会放到unsorted bin中，那么什么时候才会保存到small bin和large bin中？&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&amp;emsp;&amp;emsp;（卧槽，我答案呢….）&lt;/p&gt;
+&lt;p&gt;&amp;emsp;&amp;emsp;哎，好记性不如烂笔头，赶紧祭出gdb分析一通，并写下此篇文章记录一下。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="逆向分析" scheme="http://yoursite.com/categories/%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="ctf" scheme="http://yoursite.com/tags/ctf/"/>
+    
+      <category term="pwn" scheme="http://yoursite.com/tags/pwn/"/>
+    
+      <category term="linux" scheme="http://yoursite.com/tags/linux/"/>
+    
+      <category term="heap" scheme="http://yoursite.com/tags/heap/"/>
+    
+  </entry>
   
   <entry>
     <title>[阅读笔记]《AVPASS: Automatically Bypassing Android Malware Detection System》</title>
